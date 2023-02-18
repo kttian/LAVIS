@@ -1,7 +1,24 @@
 '''
-instructions are outdated TODO
+Instructions:
 
-First, 
+If you have just downloaded coco, run
+`python make_coco_subset.py --init`
+to copy the original dataset files to `*_orig.json`.
+***ONLY RUN THIS ONCE AND NEVER AGAIN!***
+
+Next, run 
+`python make_coco_subset.py --create --save_subset`
+to create the subset files and save them to '*_subset.json'. 
+You can run without `--save_subset` flag to play around with `--create` without saving any files.
+
+To load the subset dataset before training, run 
+`python make_coco_subset.py --load_small`.
+
+To load the original dataset before training, run
+`python make_coco_subset.py --load_orig`.
+
+For further info, here is what the python --init, --load_small, and --load_orig flags are doing:
+
 cd /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/home/.cache/lavis/coco/annotations/
 copy each file from coco_karpathy_train.json to coco_karpathy_train_orig.json
 create subset files by running this python script
@@ -68,7 +85,7 @@ def create_subset(save_subset):
         print(split)
 
         # load original data 
-        file_name = os.path.join(cache_root, 'coco', 'annotations', f'coco_karpathy_{split}_orig.json')
+        file_name = get_filename(split, mode='orig', gt=False)
         obj = open(file_name)
         data = json.load(obj)
 
@@ -77,7 +94,7 @@ def create_subset(save_subset):
 
         # create data subset 
         data_subset = data[:size]
-        new_file = os.path.join(cache_root, 'coco', 'annotations', f'coco_karpathy_{split}_subset.json')
+        new_file = get_filename(split, mode='subset', gt=False)
         # save data subset 
         if save_subset:
             with open(new_file, "w") as outfile:
@@ -85,8 +102,8 @@ def create_subset(save_subset):
         
         if split == 'val' or split == 'test':
             # create subset for gt
-            gt_file = os.path.join(cache_root, 'coco_gt', f'coco_karpathy_{split}_gt_orig.json')
-            new_gt_file = os.path.join(cache_root, 'coco_gt', f'coco_karpathy_{split}_gt_subset.json')
+            gt_file = get_filename(split, mode='orig', gt=True)
+            new_gt_file = get_filename(split, mode='subset', gt=True)
             gt_obj = open(gt_file)
             gt_data = json.load(gt_obj) # keys are 'annotations', 'images'
             print(gt_data["annotations"][0])
@@ -151,8 +168,8 @@ if __name__ == "__main__":
         print("first time run - copy file to _orig")
         # copy coco files 
         for split in ['train', 'val', 'test']:
-            coco_file = os.path.join(cache_root, 'coco', 'annotations', f'coco_karpathy_{split}.json')
-            orig_file = os.path.join(cache_root, 'coco', 'annotations', f'coco_karpathy_{split}_orig.json')
+            coco_file = get_filename(split, gt=False)
+            orig_file = get_filename(split, mode='orig', gt=False)
             if split == 'train':
                 coco_obj = open(coco_file)
                 coco_data = json.load(coco_obj)
@@ -162,8 +179,8 @@ if __name__ == "__main__":
         # copy gt files ... warning: they may not be downloaded yet
         # download_coco_gt() 
         for split in ['val', 'test']:
-            coco_file = os.path.join(cache_root, 'coco_gt', f'coco_karpathy_{split}_gt.json')
-            orig_file = os.path.join(cache_root, 'coco_gt', f'coco_karpathy_{split}_gt_orig.json')
+            coco_file = get_filename(split, gt=True)
+            orig_file = get_filename(split, mode='orig', gt=True)
             if split == 'val':
                 coco_obj = open(coco_file)
                 coco_data = json.load(coco_obj)
@@ -177,25 +194,25 @@ if __name__ == "__main__":
     if args.load_orig:
         print("save orig coco dataset")
         for split in ['train', 'val', 'test']:
-            used_file = os.path.join(cache_root, 'coco', 'annotations', f'coco_karpathy_{split}.json')
-            orig_file = os.path.join(cache_root, 'coco', 'annotations', f'coco_karpathy_{split}_orig.json')
+            used_file = get_filename(split, gt=False)
+            orig_file = get_filename(split, mode='orig', gt=False)
             shutil.copy(orig_file, used_file)
 
         for split in ['val', 'test']:
-            used_file = os.path.join(cache_root, 'coco_gt', f'coco_karpathy_{split}_gt.json')
-            orig_file = os.path.join(cache_root, 'coco_gt', f'coco_karpathy_{split}_gt_orig.json')
+            used_file = get_filename(split, gt=True)
+            orig_file = get_filename(split, mode='orig', gt=True)
             shutil.copy(orig_file, used_file)
     
     if args.load_small:
         print("save small coco subset")
         for split in ['test', 'val', 'train']:
-            used_file = os.path.join(cache_root, 'coco', 'annotations', f'coco_karpathy_{split}.json')
-            new_file = os.path.join(cache_root, 'coco', 'annotations', f'coco_karpathy_{split}_subset.json')
+            used_file = get_filename(split, gt=False)
+            new_file = get_filename(split, mode='subset', gt=False)
             shutil.copy(new_file, used_file)
         
         for split in ['val', 'test']:
-            used_file = os.path.join(cache_root, 'coco_gt', f'coco_karpathy_{split}_gt.json')
-            new_file = os.path.join(cache_root, 'coco_gt', f'coco_karpathy_{split}_gt_subset.json')
+            used_file = get_filename(split, gt=True)
+            new_file = get_filename(split, mode='subset', gt=True)
             shutil.copy(new_file, used_file)
     
     print("finished make_coco_subset.")
