@@ -21,4 +21,4 @@ datasets:
           storage: flickr30k/annotations/test.json
       images:
           storage: flickr30k/images
-          # storage: /export/share/datasets/vision/flickr30k
+          # storage: /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/flickr30k

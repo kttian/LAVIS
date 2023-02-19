@@ -21,4 +21,4 @@ datasets:
           url: https://storage.googleapis.com/sfr-vision-language-research/LAVIS/datasets/vatex/cap_private_test.json
           storage: vatex/annotations/cap_test.json
       videos:
-        storage: /export/share/dongxuli/data/vatex
+        storage: /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/dongxuli/data/vatex

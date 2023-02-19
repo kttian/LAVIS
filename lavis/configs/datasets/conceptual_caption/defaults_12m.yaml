@@ -13,7 +13,7 @@ datasets:
       annotations:
         train:
           url:
-              - /export/home/workspace/datasets/cc12m.json
+              - /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/home/workspace/datasets/cc12m.json
           storage:
               - conceptual_caption/annotations/cc12m.json
       images:

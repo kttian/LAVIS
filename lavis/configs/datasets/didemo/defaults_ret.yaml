@@ -22,4 +22,4 @@ datasets:
           storage: didemo/annotations/retrieval_test.json
       videos:
         storage: didemo/videos
-        # storage: /export/share/dongxuli/data/didemo_retrieval/videos
+        # storage: /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/dongxuli/data/didemo_retrieval/videos

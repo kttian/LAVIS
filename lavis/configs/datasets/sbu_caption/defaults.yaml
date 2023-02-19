@@ -14,9 +14,9 @@ datasets:
         train:
           url:
               - https://storage.googleapis.com/sfr-vision-language-research/LAVIS/datasets/sbu/sbu.json
-              # - /export/share/dongxuli/data/lavis/sbu/annotation/sbu.json
+              # - /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/dongxuli/data/lavis/sbu/annotation/sbu.json
           storage:
               - sbu_captions/annotations/sbu.json
       images:
           storage: sbu_captions/images
-          # storage: /export/share/datasets/vision_language/sbu_resize
+          # storage: /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision_language/sbu_resize

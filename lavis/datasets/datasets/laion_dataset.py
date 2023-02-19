@@ -52,7 +52,7 @@ if __name__ == "__main__":
     dataset = LaionDataset(
         vis_processor=transform_train,
         text_processor=lambda x: x,
-        location="/export/laion/laion2B-multi/part-00000/{00000..01743}.tar",
+        location="/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/laion/laion2B-multi/part-00000/{00000..01743}.tar",
     )
 
     import torch

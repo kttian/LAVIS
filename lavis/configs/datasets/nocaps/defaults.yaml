@@ -19,4 +19,4 @@ datasets:
           storage: nocaps/annotations/nocaps_test.json
       images:
         storage: nocaps/images
-        # storage: /export/share/datasets/vision/nocaps/
+        # storage: /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/nocaps/

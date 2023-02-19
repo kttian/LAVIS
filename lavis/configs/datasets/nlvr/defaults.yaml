@@ -21,4 +21,4 @@ datasets:
           url: https://storage.googleapis.com/sfr-vision-language-research/LAVIS/datasets/nlvr/nlvr_dev.json
           storage: nlvr/annotations/test.json
       images:
-          storage: /export/share/datasets/vision/NLVR2/
+          storage: /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/NLVR2/

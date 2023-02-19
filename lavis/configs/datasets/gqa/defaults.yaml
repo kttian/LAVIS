@@ -13,8 +13,8 @@ datasets:
       annotations:
         train:
           url:
-              - /export/share/datasets/vision/GQA/questions1.2/train_all_questions/train_all_questions_0.json
-              - /export/share/datasets/vision/GQA/questions1.2/val_all_questions.json
+              - /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/GQA/questions1.2/train_all_questions/train_all_questions_0.json
+              - /n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/GQA/questions1.2/val_all_questions.json
           storage:
               - gqa/annotations/train_all_questions_0.json
               - gqa/annotations/val_all_questions.json
