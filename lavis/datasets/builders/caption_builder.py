@@ -6,6 +6,10 @@
 """
 
 from lavis.datasets.builders.base_dataset_builder import BaseDatasetBuilder
+from lavis.datasets.datasets.caption_datasets import (
+    CaptionDataset,
+    CaptionEvalDataset
+)
 from lavis.datasets.datasets.coco_caption_datasets import (
     COCOCapDataset,
     COCOCapEvalDataset,
@@ -17,6 +21,16 @@ from lavis.datasets.datasets.video_caption_datasets import (
     VideoCaptionDataset,
     VideoCaptionEvalDataset,
 )
+
+@registry.register_builder("mimic_cxr")
+class MimicCxrBuilder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/defaults.yaml",
+    }
 
 
 @registry.register_builder("coco_caption")

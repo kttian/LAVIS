@@ -12,6 +12,7 @@ from lavis.tasks.image_text_pretrain import ImageTextPretrainTask
 from lavis.tasks.multimodal_classification import (
     MultimodalClassificationTask,
 )
+from lavis.tasks.report_gen import ReportGenTask
 from lavis.tasks.retrieval import RetrievalTask
 from lavis.tasks.vqa import VQATask, GQATask, AOKVQATask
 from lavis.tasks.vqa_reading_comprehension import VQARCTask, GQARCTask
