@@ -114,9 +114,21 @@ def main(args):
         os.system(f'ln -s /n/data1/hms/dbmi/rajpurkar/lab/datasets/cxr/mimic-cxr-resized-256/2.0.0/files/ {imgdir}')
     
     if args.val:
-        _, test_path = get_filename('test', args.report_mode, args.size_mode)
+        # copy from train to val
+        _, train_path = get_filename('train', args.report_mode, args.size_mode)
         _, val_path = get_filename('val', args.report_mode, args.size_mode)
-        os.system(f'cp {test_path} {val_path}')
+        # read train json
+        f = open(train_path, 'r')
+        train_json = json.load(f)
+        for item in train_json:
+            item['caption'] = [item['caption']]
+        # write to val json
+        with open(val_path, 'w') as fv:
+            json.dump(train_json, fv)
+        # copy from test to val
+        # _, test_path = get_filename('test', args.report_mode, args.size_mode)
+        # _, val_path = get_filename('val', args.report_mode, args.size_mode)
+        # os.system(f'cp {test_path} {val_path}')
 
 if __name__ == "__main__":
     args = parser.parse_args()
