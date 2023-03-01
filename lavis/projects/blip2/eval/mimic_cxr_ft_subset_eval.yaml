@@ -1,0 +1,48 @@
+ # Copyright (c) 2022, salesforce.com, inc.
+ # All rights reserved.
+ # SPDX-License-Identifier: BSD-3-Clause
+ # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+
+model:
+  arch: blip2_opt
+  model_type: report_gen_both_subset
+  use_grad_checkpoint: True
+  freeze_vit: False
+
+datasets:
+  mimic_cxr: # name of the dataset builder
+    vis_processor:
+        eval:
+          name: "blip_image_eval"
+          image_size: 364
+    text_processor:
+        eval:
+          name: "blip_caption"
+          prompt: "evaluation prompt "
+    # build_info:
+    #     images:
+    #         storage: '/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/coco/images/'
+
+run:
+  task: report_gen
+  # optimizer
+  batch_size_train: 4 # originally 16
+  batch_size_eval: 4
+  num_workers: 4
+  accum_grad_iters: 1
+
+  max_len: 450
+  min_len: 15
+  num_beams: 5
+
+  seed: 42
+  output_dir: "output/BLIP2/mimic_cxr/"
+
+  evaluate: True
+  # valid_splits: ["val"]
+  test_splits: ["test"]
+
+  device: "cuda"
+  world_size: 1
+  dist_url: "env://"
+  distributed: True

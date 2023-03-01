@@ -35,6 +35,8 @@ class Blip2OPT(Blip2Base):
         "pretrain_opt6.7b": "configs/models/blip2/blip2_pretrain_opt6.7b.yaml",
         "caption_coco_opt2.7b": "configs/models/blip2/blip2_caption_opt2.7b.yaml",
         "caption_coco_opt6.7b": "configs/models/blip2/blip2_caption_opt6.7b.yaml",
+        "report_gen_opt2.7b": "configs/models/blip2/blip2_report_gen_opt2.7b.yaml",
+        "report_gen_both_subset": "configs/models/blip2/blip2_report_gen_both_subset.yaml",
     }
 
     def __init__(
@@ -144,7 +146,6 @@ class Blip2OPT(Blip2Base):
             labels=targets,
         )
         loss = outputs.loss
-
         return {"loss": loss}
 
     @torch.no_grad()
@@ -261,6 +262,7 @@ class Blip2OPT(Blip2Base):
             prompt=prompt,
             max_txt_len=max_txt_len,
         )
+        logging.info(f"Just created model architecture")
         model.load_checkpoint_from_config(cfg)
-
+        logging.info(f"Loaded checkpoint from model config")
         return model
