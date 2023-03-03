@@ -44,6 +44,45 @@ class MimicCxrSubsetBuilder(BaseDatasetBuilder):
         "default": "configs/datasets/mimic_cxr/defaults_subset.yaml",
     }
 
+@registry.register_builder("mimic_cxr_impression")
+class MimicCxrImpressionBuilder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/impression_full.yaml",
+    }
+
+@registry.register_builder("mimic_cxr_findings")
+class MimicCxrFindingsBuilder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/findings_full.yaml",
+    }
+
+@registry.register_builder("mimic_cxr_impression_subset")
+class MimicCxrImpressionSubsetBuilder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/impression_subset.yaml",
+    }
+
+@registry.register_builder("mimic_cxr_findings_subset")
+class MimicCxrFindingsSubsetBuilder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/findings_subset.yaml",
+    }
 
 @registry.register_builder("coco_caption")
 class COCOCapBuilder(BaseDatasetBuilder):
