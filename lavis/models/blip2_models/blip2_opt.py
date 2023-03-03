@@ -36,7 +36,7 @@ class Blip2OPT(Blip2Base):
         "caption_coco_opt2.7b": "configs/models/blip2/blip2_caption_opt2.7b.yaml",
         "caption_coco_opt6.7b": "configs/models/blip2/blip2_caption_opt6.7b.yaml",
         "report_gen_opt2.7b": "configs/models/blip2/blip2_report_gen_opt2.7b.yaml",
-        "report_gen_both_subset": "configs/models/blip2/blip2_report_gen_both_subset.yaml",
+        "report_gen_both_subset": "configs/models/blip2/blip2_report_gen_eval_both_subset.yaml",
     }
 
     def __init__(
@@ -76,6 +76,8 @@ class Blip2OPT(Blip2Base):
             layer.intermediate = None
 
         self.opt_tokenizer = AutoTokenizer.from_pretrained(opt_model, use_fast=False)
+        self.opt_tokenizer.add_special_tokens({"additional_special_tokens": ["<findings>", "<impression>"]})
+        
         self.opt_model = OPTForCausalLM.from_pretrained(
             opt_model, torch_dtype=torch.float16
         )
@@ -90,6 +92,11 @@ class Blip2OPT(Blip2Base):
         )
 
         self.max_txt_len = max_txt_len
+        self.prompt = prompt
+        prompt_tokens = self.opt_tokenizer(self.prompt, return_tensors="pt")
+        self.prompt_length = prompt_tokens.attention_mask.sum(1)
+
+    def set_prompt(self, prompt):
         self.prompt = prompt
         prompt_tokens = self.opt_tokenizer(self.prompt, return_tensors="pt")
         self.prompt_length = prompt_tokens.attention_mask.sum(1)
