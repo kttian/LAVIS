@@ -29,6 +29,8 @@ class Blip2Base(BaseModel):
     def init_tokenizer(cls):
         tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
         tokenizer.add_special_tokens({"bos_token": "[DEC]"})
+        # tokenizer.add_tokens({"findings_token": "[FINDINGS]"})
+        # tokenizer.add_tokens({"impression_token": "[IMPRESSION]"})
         return tokenizer
 
     @classmethod
@@ -70,6 +72,8 @@ class Blip2Base(BaseModel):
             raise RuntimeError("checkpoint url or path is invalid")
 
         state_dict = checkpoint["model"]
+        print("STATE DICT in blip2")
+        print(state_dict.keys())
 
         msg = self.load_state_dict(state_dict, strict=False)
 

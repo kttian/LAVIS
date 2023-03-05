@@ -8,9 +8,10 @@ model:
   model_type: report_gen_both_subset
   use_grad_checkpoint: True
   freeze_vit: False
+  finetuned: "/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/LAVIS-kttian/lavis/output/BLIP2/mimic_cxr/20230301043/checkpoint_185.pth"
 
 datasets:
-  mimic_cxr: # name of the dataset builder
+  mimic_cxr_subset: # name of the dataset builder
     vis_processor:
         eval:
           name: "blip_image_eval"
@@ -18,7 +19,7 @@ datasets:
     text_processor:
         eval:
           name: "blip_caption"
-          prompt: "evaluation prompt "
+          prompt: ""
     # build_info:
     #     images:
     #         storage: '/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/coco/images/'
@@ -31,12 +32,12 @@ run:
   num_workers: 4
   accum_grad_iters: 1
 
-  max_len: 450
+  max_len: 300
   min_len: 15
   num_beams: 5
 
   seed: 42
-  output_dir: "output/BLIP2/mimic_cxr/"
+  output_dir: "output/BLIP2/mimic_cxr/20230301043"
 
   evaluate: True
   # valid_splits: ["val"]

@@ -6,6 +6,7 @@
 """
 
 import argparse
+import logging
 import random
 
 import numpy as np
@@ -33,7 +34,8 @@ from lavis.tasks import *
 def parse_args():
     parser = argparse.ArgumentParser(description="Training")
 
-    parser.add_argument("--cfg-path", required=True, help="path to configuration file.")
+    parser.add_argument("--cfg-path", required=False, help="path to configuration file.",
+                        default="lavis/projects/blip2/eval/mimic_cxr_ft_subset_eval.yaml")
     parser.add_argument(
         "--options",
         nargs="+",
@@ -66,8 +68,11 @@ def main():
 
     # set before init_distributed_mode() to ensure the same job_id shared across all ranks.
     job_id = now()
+    logging.info(f"FOLDER NAME (lavis job_id): {job_id}")
+    print(f"FOLDER NAME (lavis job_id): {job_id}")
 
-    cfg = Config(parse_args())
+    args = parse_args()
+    cfg = Config(args)
 
     init_distributed_mode(cfg.run_cfg)
 

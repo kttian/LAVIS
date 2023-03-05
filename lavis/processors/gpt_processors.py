@@ -21,11 +21,13 @@ from transformers import GPT2Tokenizer
 
 SPECIAL_TOKENS_DICT = {
     "bos_token": "<bos>",
+    "findings_token": "<findings>",
     "eos_token": "<eos>",
     "additional_special_tokens": ["<speaker1>", "<speaker2>", "<video>", "<cap>"],
     "pad_token": "<pad>",
 }
 SPECIAL_TOKENS = [
+    "<findings>",
     "<bos>",
     "<eos>",
     "<speaker1>",

@@ -34,6 +34,7 @@ __all__ = [
     "AOKVQATask",
     "RetrievalTask",
     "CaptionTask",
+    "ReportGenTask",
     "VQATask",
     "GQATask",
     "VQARCTask",

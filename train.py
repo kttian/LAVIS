@@ -6,6 +6,7 @@
 """
 
 import argparse
+import logging
 import os
 import random
 
@@ -31,11 +32,18 @@ from lavis.processors import *
 from lavis.runners import *
 from lavis.tasks import *
 
+# from torchtext.data.metrics import bleu_score
+# import nltk
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Training")
 
-    parser.add_argument("--cfg-path", required=True, help="path to configuration file.")
+    parser.add_argument("--cfg-path", required=False, help="path to configuration file.",
+                        # default="lavis/projects/blip2/train/caption_coco_ft.yaml",
+                        # default="lavis/projects/blip2/train/mimic_cxr_ft_subset.yaml",
+                        # default="lavis/projects/blip2/train/pretrain_stage2.yaml",
+                        default="lavis/projects/blip2/train/pretrain_stage2_mimic_cxr_impression_subset.yaml"
+                        )
     parser.add_argument(
         "--options",
         nargs="+",
@@ -77,6 +85,8 @@ def main():
 
     # set before init_distributed_mode() to ensure the same job_id shared across all ranks.
     job_id = now()
+    logging.info(f"FOLDER NAME (lavis job_id): {job_id}")
+    print(f"FOLDER NAME (lavis job_id): {job_id}")
 
     cfg = Config(parse_args())
 

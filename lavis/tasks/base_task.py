@@ -27,10 +27,14 @@ class BaseTask:
         return cls()
 
     def build_model(self, cfg):
+        logging.info("Building model...")
         model_config = cfg.model_cfg
 
         model_cls = registry.get_model_class(model_config.arch)
-        return model_cls.from_config(model_config)
+        print(f"Got model class {model_cls}")
+        model_ret = model_cls.from_config(model_config)
+        print("finished next step...")
+        return model_ret
 
     def build_datasets(self, cfg):
         """
@@ -85,7 +89,7 @@ class BaseTask:
         results = []
 
         for samples in metric_logger.log_every(data_loader, print_freq, header):
-            samples = prepare_sample(samples, cuda_enabled=cuda_enabled)
+            samples = prepare_sample(samples, cuda_enabled=cuda_enabled) # batch of image ids
 
             eval_output = self.valid_step(model=model, samples=samples)
             results.extend(eval_output)
@@ -201,13 +205,12 @@ class BaseTask:
             samples = next(data_loader)
 
             samples = prepare_sample(samples, cuda_enabled=cuda_enabled)
-            samples.update(
-                {
+            update_input = {
                     "epoch": inner_epoch,
                     "num_iters_per_epoch": iters_per_epoch,
                     "iters": i,
                 }
-            )
+            samples.update(update_input)
 
             lr_scheduler.step(cur_epoch=inner_epoch, cur_step=i)
 

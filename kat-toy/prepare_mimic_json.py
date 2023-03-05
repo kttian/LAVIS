@@ -26,10 +26,10 @@ cache_root = "/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/home/.cach
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--create', action='store_true') 
-parser.add_argument('--report_mode', type=str, default='impression', help='whether to generate findings, impression, or target (which is both)')
+parser.add_argument('--report_mode', type=str, default='impression', help='whether to generate findings, impression, target, or both')
 parser.add_argument('--size_mode', type=str, default='subset', help='whether to generate mimic subset or full')
-parser.add_argument('--image', action='store_true') 
-parser.add_argument('--save', action='store_true') 
+parser.add_argument('--image', action='store_true', help="whether to create the simlink to mimimc images root dir or not") 
+parser.add_argument('--save', action='store_true', help='whether to save files or not') 
 parser.add_argument('--val', type=str, default='train', help='whether to copy val from train or test TEMPORARY MEASURE')
 
 
@@ -56,7 +56,7 @@ def get_report(row, report_mode):
         return row[report_mode]
     else: # both
         # TODO: what is the proper way to generate both?
-        return f"FINDINGS: {row['findings']} \n IMPRESSION: {row['impression']}"
+        return f"[FINDINGS] {row['findings']} [IMPRESSION] {row['impression']}"
 
 
 def process_data(data_df):
@@ -69,6 +69,7 @@ def get_filename(split, report_mode, size_mode):
     outfile = os.path.join(outdir, name)
     return outdir, outfile 
 
+
 def create_jsons(args):
     def convert_to_json_item(row, report_mode=args.report_mode):
         ''' 
@@ -78,7 +79,7 @@ def create_jsons(args):
         subject_id = f"p{str(int(row['subject_id']))}"
         study_id = f"s{str(int(row['study_id']))}"
         img_file = f"{subject_id[:3]}/{subject_id}/{study_id}/{dicom_id}.png"
-        report = row[report_mode]
+        report = get_report(row, report_mode)
         image_id = "".join([str(int(x, 16)) for x in dicom_id.split('-')])
         return {'image': img_file, 'caption': report, 'dicom_id': dicom_id, 
                 'subject_id': subject_id, 'study_id': study_id, 'image_id': image_id}
@@ -117,6 +118,7 @@ def create_jsons(args):
         else:
             print(json_data)
 
+
 def main(args):
     if args.create:
         create_jsons(args)
@@ -154,6 +156,7 @@ def main(args):
         _, test_path = get_filename('test', args.report_mode, args.size_mode)
         _, val_path = get_filename('val', args.report_mode, args.size_mode)
         os.system(f'cp {test_path} {val_path}')
+
 
 if __name__ == "__main__":
     args = parser.parse_args()

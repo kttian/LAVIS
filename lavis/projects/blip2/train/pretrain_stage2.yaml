@@ -24,14 +24,14 @@ datasets:
     # build_info:
     #     images:
     #         storage: '/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/coco/images/'          
-  vg_caption: # name of the dataset builder
-    vis_processor:
-        train:
-          name: "blip_image_train"
-          image_size: 224
-    text_processor:
-        train:
-          name: "blip_caption"
+  # vg_caption: # name of the dataset builder
+  #   vis_processor:
+  #       train:
+  #         name: "blip_image_train"
+  #         image_size: 224
+  #   text_processor:
+  #       train:
+  #         name: "blip_caption"
     # build_info:
     #     images:
     #         storage: '//n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/visual-genome/image/'
@@ -45,18 +45,18 @@ run:
   warmup_lr: 1e-6
 
   weight_decay: 0.05
-  max_epoch: 10
+  max_epoch: 20
   batch_size_train: 64
   batch_size_eval: 64
   num_workers: 4
   warmup_steps: 2000
 
   seed: 42
-  output_dir: "output/BLIP2/Pretrain_stage2"
+  output_dir: "output/BLIP2/Pretrain_stage2_coco"
 
   amp: True
-  resume_ckpt_path: null
-
+  # resume_ckpt_path: null
+  resume_ckpt_path: "/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/LAVIS-kttian/lavis/output/BLIP2/Pretrain_stage2_coco/20230304165/checkpoint_9.pth"
   evaluate: False 
   train_splits: ["train"]
 

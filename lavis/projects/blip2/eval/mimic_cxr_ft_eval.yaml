@@ -5,7 +5,7 @@
 
 model:
   arch: blip2_opt
-  model_type: report_gen_opt2.7b
+  model_type: report_gen_both_subset
   use_grad_checkpoint: True
   freeze_vit: False
 
@@ -18,7 +18,7 @@ datasets:
     text_processor:
         eval:
           name: "blip_caption"
-          prompt: "train prompt "
+          prompt: ""
     # build_info:
     #     images:
     #         storage: '/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/export/share/datasets/vision/coco/images/'
@@ -31,7 +31,7 @@ run:
   num_workers: 4
   accum_grad_iters: 1
 
-  max_len: 450
+  max_len: 300
   min_len: 15
   num_beams: 5
 

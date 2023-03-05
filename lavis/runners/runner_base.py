@@ -365,6 +365,7 @@ class RunnerBase:
         if not self.evaluate_only and self.resume_ckpt_path is not None:
             self._load_checkpoint(self.resume_ckpt_path)
 
+        cur_epoch = self.start_epoch 
         for cur_epoch in range(self.start_epoch, self.max_epoch):
             # training phase
             if not self.evaluate_only:
@@ -428,7 +429,7 @@ class RunnerBase:
         # train
         self.model.train()
 
-        return self.task.train_epoch(
+        train_out = self.task.train_epoch(
             epoch=epoch,
             model=self.model,
             data_loader=self.train_loader,
@@ -439,6 +440,7 @@ class RunnerBase:
             log_freq=self.log_freq,
             accum_grad_iters=self.accum_grad_iters,
         )
+        return train_out 
 
     @torch.no_grad()
     def eval_epoch(self, split_name, cur_epoch, skip_reload=False):
@@ -459,6 +461,7 @@ class RunnerBase:
         # TODO consider moving to model.before_evaluation()
         model = self.unwrap_dist_model(self.model)
         if not skip_reload and cur_epoch == "best":
+            print("reload")
             model = self._reload_best_model(model)
         model.eval()
 
@@ -625,7 +628,9 @@ class RunnerBase:
             raise RuntimeError("checkpoint url or path is invalid")
 
         state_dict = checkpoint["model"]
-        self.unwrap_dist_model(self.model).load_state_dict(state_dict)
+        print("STATE DICT in runner base")
+        print(state_dict.keys())
+        self.unwrap_dist_model(self.model).load_state_dict(state_dict, strict=False)
 
         self.optimizer.load_state_dict(checkpoint["optimizer"])
         if self.scaler and "scaler" in checkpoint:
