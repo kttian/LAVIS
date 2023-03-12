@@ -33,7 +33,7 @@ class BaseTask:
         model_cls = registry.get_model_class(model_config.arch)
         print(f"Got model class {model_cls}")
         model_ret = model_cls.from_config(model_config)
-        print("finished next step...")
+        print("...Got model from config")
         return model_ret
 
     def build_datasets(self, cfg):
@@ -110,8 +110,9 @@ class BaseTask:
         cuda_enabled=False,
         log_freq=50,
         accum_grad_iters=1,
+        val_loader=None,
     ):
-        return self._train_inner_loop(
+        train_dict = self._train_inner_loop(
             epoch=epoch,
             iters_per_epoch=len(data_loader),
             model=model,
@@ -122,7 +123,23 @@ class BaseTask:
             log_freq=log_freq,
             cuda_enabled=cuda_enabled,
             accum_grad_iters=accum_grad_iters,
+            val_loader=val_loader,
         )
+        val_dict = self._after_train_inner_loop(
+            epoch=epoch,
+            iters_per_epoch=len(data_loader),
+            model=model,
+            data_loader=data_loader,
+            optimizer=optimizer,
+            scaler=scaler,
+            lr_scheduler=lr_scheduler,
+            log_freq=log_freq,
+            cuda_enabled=cuda_enabled,
+            accum_grad_iters=accum_grad_iters,
+            val_loader=val_loader,
+        )
+        train_dict.update(val_dict)
+        return train_dict
 
     def train_iters(
         self,
@@ -165,6 +182,7 @@ class BaseTask:
         log_freq=50,
         cuda_enabled=False,
         accum_grad_iters=1,
+        val_loader=None,
     ):
         """
         An inner training loop compatible with both epoch-based and iter-based training.
@@ -181,7 +199,7 @@ class BaseTask:
         metric_logger = MetricLogger(delimiter="  ")
         metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value:.6f}"))
         metric_logger.add_meter("loss", SmoothedValue(window_size=1, fmt="{value:.4f}"))
-
+        
         # if iter-based runner, schedule lr based on inner epoch.
         logging.info(
             "Start training epoch {}, {} iters per inner epoch.".format(
@@ -235,14 +253,87 @@ class BaseTask:
             metric_logger.update(loss=loss.item())
             metric_logger.update(lr=optimizer.param_groups[0]["lr"])
 
+        # if val_loader:
+        #     header = "Eval: data epoch: [{}]".format(epoch)
+        #     metric_logger.add_meter("val_loss", SmoothedValue(window_size=1, fmt="{value:.4f}"))
+        #     val_len = len(val_loader)
+        #     # print("val len", val_len)
+        #     if not hasattr(val_loader, "__next__"):
+        #         val_loader = iter(val_loader)
+        #     for i in metric_logger.log_every(range(val_len), log_freq, header): 
+        #         val_samples = next(val_loader)
+        #         val_samples = prepare_sample(val_samples, cuda_enabled=cuda_enabled)
+        #         with torch.cuda.amp.autocast(enabled=use_amp):
+        #             val_loss = self.train_step(model=model, samples=val_samples)
+        #         metric_logger.update(val_loss=val_loss.item())  
+        # val_dict = self._after_train_inner_loop(
+        #     epoch,
+        #     iters_per_epoch,
+        #     model,
+        #     data_loader,
+        #     optimizer,
+        #     lr_scheduler,
+        #     scaler,
+        #     start_iters,
+        #     log_freq,
+        #     cuda_enabled,
+        #     accum_grad_iters,
+        #     val_loader,
+        # )
+
+
         # after train_epoch()
         # gather the stats from all processes
         metric_logger.synchronize_between_processes()
         logging.info("Averaged stats: " + str(metric_logger.global_avg()))
-        return {
+        train_dict = {
             k: "{:.3f}".format(meter.global_avg)
             for k, meter in metric_logger.meters.items()
         }
+        # train_dict.update(val_dict)
+        return train_dict
+
+    def _after_train_inner_loop(
+        self,
+        epoch,
+        iters_per_epoch,
+        model,
+        data_loader,
+        optimizer,
+        lr_scheduler,
+        scaler=None,
+        start_iters=None,
+        log_freq=50,
+        cuda_enabled=False,
+        accum_grad_iters=1,
+        val_loader=None,
+    ):
+        if val_loader:
+            use_amp = scaler is not None
+            header = "Eval: data epoch: [{}]".format(epoch)
+            metric_logger = MetricLogger(delimiter="  ")
+            metric_logger.add_meter("val_loss", SmoothedValue(window_size=1, fmt="{value:.4f}"))
+            val_len = len(val_loader)
+            # print("val len", val_len)
+            if not hasattr(val_loader, "__next__"):
+                val_loader = iter(val_loader)
+            
+            for i in metric_logger.log_every(range(val_len), log_freq, header): 
+                val_samples = next(val_loader)
+                val_samples = prepare_sample(val_samples, cuda_enabled=cuda_enabled)
+                with torch.cuda.amp.autocast(enabled=use_amp):
+                    val_loss = self.train_step(model=model, samples=val_samples)
+                metric_logger.update(val_loss=val_loss.item())  
+            
+            # gather the stats from all processes
+            metric_logger.synchronize_between_processes()
+            logging.info("Averaged stats: " + str(metric_logger.global_avg()))
+            return {
+                k: "{:.3f}".format(meter.global_avg)
+                for k, meter in metric_logger.meters.items()
+            }
+        else:
+            return {}
 
     @staticmethod
     def save_result(result, result_dir, filename, remove_duplicate=""):

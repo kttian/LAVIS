@@ -336,8 +336,13 @@ class RunnerBase:
     @property
     def train_loader(self):
         train_dataloader = self.dataloaders["train"]
-
         return train_dataloader
+    
+    @property
+    def val_loader(self):
+        val_dataloader = self.dataloaders["val"]
+        return val_dataloader
+        # return None 
 
     def setup_output_dir(self):
         lib_root = Path(registry.get_path("library_root"))
@@ -370,7 +375,11 @@ class RunnerBase:
             # training phase
             if not self.evaluate_only:
                 logging.info("Start training")
-                train_stats = self.train_epoch(cur_epoch)
+                if self.config.model_cfg.model_type == 'pretrain' or self.config.run.val_loader:
+                    val_loader = self.val_loader 
+                else:
+                    val_loader = None 
+                train_stats = self.train_epoch(cur_epoch, val_loader=val_loader)
                 self.log_stats(split_name="train", stats=train_stats)
 
             # evaluation phase
@@ -425,7 +434,7 @@ class RunnerBase:
 
             return test_logs
 
-    def train_epoch(self, epoch):
+    def train_epoch(self, epoch, val_loader=None):
         # train
         self.model.train()
 
@@ -439,6 +448,7 @@ class RunnerBase:
             cuda_enabled=self.cuda_enabled,
             log_freq=self.log_freq,
             accum_grad_iters=self.accum_grad_iters,
+            val_loader=val_loader,
         )
         return train_out 
 

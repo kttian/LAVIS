@@ -29,8 +29,9 @@ class Blip2Base(BaseModel):
     def init_tokenizer(cls):
         tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
         tokenizer.add_special_tokens({"bos_token": "[DEC]"})
-        # tokenizer.add_tokens({"findings_token": "[FINDINGS]"})
-        # tokenizer.add_tokens({"impression_token": "[IMPRESSION]"})
+        # tokenizer.add_special_tokens({"additional_special_tokens": ["<findings>", "<impression>"]})
+        # tokenizer.add_tokens({"findings_token": "<findings>"})
+        # tokenizer.add_tokens({"findings_token": "<impression>"})
         return tokenizer
 
     @classmethod

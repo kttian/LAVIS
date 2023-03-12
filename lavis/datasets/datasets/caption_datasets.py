@@ -74,9 +74,11 @@ class CaptionEvalDataset(BaseDataset, __DisplMixin):
         image = Image.open(image_path).convert("RGB")
 
         image = self.vis_processor(image)
+        caption = self.text_processor(ann["caption"][0])
 
         return {
             "image": image,
+            "text_input": caption,
             "image_id": ann["image_id"],
             "instance_id": ann["instance_id"],
         }

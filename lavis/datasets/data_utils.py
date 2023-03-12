@@ -133,10 +133,12 @@ def concat_datasets(datasets):
     """
     # concatenate datasets in the same split
     for split_name in datasets:
-        if split_name != "train":
-            assert (
-                len(datasets[split_name]) == 1
-            ), "Do not support multiple {} datasets.".format(split_name)
+        if False: # take this out 
+        # if split_name != "train":
+            print("Do not support multiple {} datasets. Taking just the first one.".format(split_name))
+            # assert (
+            #     len(datasets[split_name]) == 1
+            # ), "Do not support multiple {} datasets.".format(split_name)
             datasets[split_name] = datasets[split_name][0]
         else:
             iterable_datasets, map_datasets = [], []

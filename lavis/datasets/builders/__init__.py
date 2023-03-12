@@ -11,6 +11,7 @@ from lavis.datasets.builders.caption_builder import (
     MimicCxrBuilder,
     MimicCxrSubsetBuilder,
     MimicCxrImpressionBuilder,
+    MimicCxrFindingsBuilder,
     MSRVTTCapBuilder,
     MSVDCapBuilder,
     VATEXCapBuilder,

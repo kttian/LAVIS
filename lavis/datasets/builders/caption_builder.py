@@ -48,6 +48,73 @@ class MimicCxrSubsetBuilder(BaseDatasetBuilder):
         "default": "configs/datasets/mimic_cxr/defaults_subset.yaml",
     }
 
+# new impression dataset with val set
+@registry.register_builder("impression")
+class MimicCxrImpressionWvalBuilder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/sepna_wval_impression_full_224.yaml",
+    }
+
+
+# new impression dataset with val set, separate na filters, size 224
+@registry.register_builder("mimic_cxr_impression_sepna_wval_224")
+class MimicCxrImpressionSepnaWval224Builder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/sepna_wval_impression_full_224.yaml",
+    }
+
+# new findings dataset with val set, separate na filters, size 224
+@registry.register_builder("mimic_cxr_findings_sepna_wval_224")
+class MimicCxrFindingsSepnaWval224Builder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/sepna_wval_findings_full_224.yaml",
+    }
+
+# new findings dataset with val set 
+@registry.register_builder("mimic_cxr_findings_wval")
+class MimicCxrFindingsWvalBuilder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/findings_full_wval.yaml",
+    }
+
+# new impression dataset with val set
+@registry.register_builder("mimic_cxr_impression_subset_wval")
+class MimicCxrImpressionSubsetWvalBuilder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/impression_subset_wval.yaml",
+    }
+
+# new findings dataset with val set 
+@registry.register_builder("mimic_cxr_findings_subset_wval")
+class MimicCxrFindingsSubsetWvalBuilder(BaseDatasetBuilder):
+    train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
+    eval_dataset_cls = CaptionEvalDataset # use default eval dataset for now as well 
+    # check lavis/datasets/datasets/coco_caption_datasets.py later 
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/mimic_cxr/findings_subset_wval.yaml",
+    }
+
 @registry.register_builder("mimic_cxr_impression")
 class MimicCxrImpressionBuilder(BaseDatasetBuilder):
     train_dataset_cls = CaptionDataset # can use the default caption dataset class for now 
