@@ -22,6 +22,7 @@ class Blip2T5(Blip2Base):
     BLIP2 T5 model.
     Supported model types:
         - pretrain_flant5xl: pretrained model with FlanT5-XL
+        - pretrain_flant5xl_vitL: pretrained model with FlanT5-XL
         - pretrain_flant5xxl: pretrained model with FlanT5-XXL
         - caption_coco_flant5xl: fintuned image captioning model with FlanT5-XL
     Usage:
@@ -31,12 +32,14 @@ class Blip2T5(Blip2Base):
 
     PRETRAINED_MODEL_CONFIG_DICT = {
         "pretrain_flant5xl": "configs/models/blip2/blip2_pretrain_flant5xl.yaml",
+        "pretrain_flant5xl_vitL": "configs/models/blip2/blip2_pretrain_flant5xl_vitL.yaml",
         "pretrain_flant5xxl": "configs/models/blip2/blip2_pretrain_flant5xxl.yaml",
         "caption_coco_flant5xl": "configs/models/blip2/blip2_caption_flant5xl.yaml",
     }
 
     def __init__(
         self,
+        vit_model="eva_clip_g",
         img_size=224,
         drop_path_rate=0,
         use_grad_checkpoint=False,
@@ -56,11 +59,11 @@ class Blip2T5(Blip2Base):
         self.tokenizer = self.init_tokenizer()
 
         self.visual_encoder, self.ln_vision = self.init_vision_encoder(
-            img_size, drop_path_rate, use_grad_checkpoint, vit_precision
+            vit_model, img_size, drop_path_rate, use_grad_checkpoint, vit_precision
         )
         if freeze_vit:
             for name, param in self.visual_encoder.named_parameters():
-                param.requires_grad = False         
+                param.requires_grad = False
             self.visual_encoder = self.visual_encoder.eval()
             self.visual_encoder.train = disabled_train
             logging.info("freeze vision encoder")
@@ -98,7 +101,9 @@ class Blip2T5(Blip2Base):
 
     def forward(self, samples):
         image = samples["image"]
-        image_embeds = self.ln_vision(self.visual_encoder(image))
+
+        with self.maybe_autocast():
+            image_embeds = self.ln_vision(self.visual_encoder(image))
         image_atts = torch.ones(image_embeds.size()[:-1], dtype=torch.long).to(
             image.device
         )
@@ -114,7 +119,7 @@ class Blip2T5(Blip2Base):
         inputs_t5 = self.t5_proj(query_output.last_hidden_state)
         atts_t5 = torch.ones(inputs_t5.size()[:-1], dtype=torch.long).to(image.device)
 
-        with torch.cuda.amp.autocast(dtype=torch.bfloat16):
+        with self.maybe_autocast(dtype=torch.bfloat16):
             input_tokens = self.t5_tokenizer(
                 samples["text_input"],
                 padding="longest",
@@ -179,8 +184,10 @@ class Blip2T5(Blip2Base):
             captions (list): A list of strings of length batch_size * num_captions.
         """
         image = samples["image"]
-        with torch.cuda.amp.autocast(enabled=(self.device != torch.device("cpu"))):
+
+        with self.maybe_autocast():
             image_embeds = self.ln_vision(self.visual_encoder(image))
+        image_embeds = image_embeds.float()
         image_atts = torch.ones(image_embeds.size()[:-1], dtype=torch.long).to(
             image.device
         )
@@ -214,8 +221,7 @@ class Blip2T5(Blip2Base):
 
         encoder_atts = torch.cat([atts_t5, input_tokens.attention_mask], dim=1)
 
-        device_type = "cuda" if "cuda" in str(self.device) else "cpu"
-        with torch.amp.autocast(device_type=device_type, dtype=torch.bfloat16):
+        with self.maybe_autocast(dtype=torch.bfloat16):
             inputs_embeds = self.t5_model.encoder.embed_tokens(input_tokens.input_ids)
             inputs_embeds = torch.cat([inputs_t5, inputs_embeds], dim=1)
 
@@ -252,8 +258,9 @@ class Blip2T5(Blip2Base):
         **kwargs
     ):
         image = samples["image"]
-        with torch.cuda.amp.autocast(enabled=(self.device != torch.device("cpu"))):
+        with self.maybe_autocast():
             image_embeds = self.ln_vision(self.visual_encoder(image))
+        image_embeds = image_embeds.float()
         image_atts = torch.ones(image_embeds.size()[:-1], dtype=torch.long).to(
             image.device
         )
@@ -282,8 +289,7 @@ class Blip2T5(Blip2Base):
 
         encoder_atts = torch.cat([atts_t5, input_tokens.attention_mask], dim=1)
 
-        device_type = "cuda" if "cuda" in str(self.device) else "cpu"
-        with torch.amp.autocast(device_type=device_type, dtype=torch.bfloat16):
+        with self.maybe_autocast(dtype=torch.bfloat16):
             inputs_embeds = self.t5_model.encoder.embed_tokens(input_tokens.input_ids)
             inputs_embeds = torch.cat([inputs_t5, inputs_embeds], dim=1)
 
@@ -344,6 +350,7 @@ class Blip2T5(Blip2Base):
 
     @classmethod
     def from_config(cls, cfg):
+        vit_model = cfg.get("vit_model", "eva_clip_g")
         img_size = cfg.get("image_size")
         num_query_token = cfg.get("num_query_token")
         t5_model = cfg.get("t5_model")
@@ -359,6 +366,7 @@ class Blip2T5(Blip2Base):
         apply_lemmatizer = cfg.get("apply_lemmatizer", False)
 
         model = cls(
+            vit_model=vit_model,
             img_size=img_size,
             drop_path_rate=drop_path_rate,
             use_grad_checkpoint=use_grad_checkpoint,
