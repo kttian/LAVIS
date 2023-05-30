@@ -193,7 +193,8 @@ def _ntuple(n):
             return x
         return tuple(repeat(x, n))
     return parse
-to_2tuple = _ntuple(2)        
+to_2tuple = _ntuple(2)  
+      
 def interpolate_pos_embed(model, state_dict, interpolation: str = 'bicubic', seq_dim=1):
     # Rescale the grid of position embeddings when loading from state_dict
     old_pos_embed = state_dict.get('positional_embedding', None)

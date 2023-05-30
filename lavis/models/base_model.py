@@ -26,7 +26,7 @@ class BaseModel(nn.Module):
     def device(self):
         return list(self.parameters())[0].device
 
-    def load_checkpoint(self, url_or_filename):
+    def load_checkpoint(self, url_or_filename, partial_load=False):
         """
         Load from a finetuned checkpoint.
 
@@ -48,7 +48,22 @@ class BaseModel(nn.Module):
         else:
             state_dict = checkpoint
 
+        if partial_load:
+            # delete params from state_dict where shape doesn't match so we don't load
+            orig_len = len(list(state_dict.items()))
+            for name, param in list(state_dict.items()):
+                if name not in self.state_dict():
+                    continue 
+                else:
+                    if state_dict[name].shape != self.state_dict()[name].shape:
+                        del state_dict[name] # don't want to load this 
+            new_len = len(list(state_dict.items()))
+            logging.info(f"partial loaded {new_len} out of {orig_len} checkpoint parameters.")
+        else:
+            logging.info(f"full load.")
+
         msg = self.load_state_dict(state_dict, strict=False)
+        
 
         logging.info("Missing keys {}".format(msg.missing_keys))
         logging.info("load checkpoint from %s" % url_or_filename)
@@ -86,21 +101,26 @@ class BaseModel(nn.Module):
         When loading the pretrained model, each task-specific architecture may define their
         own load_from_pretrained() method.
         """
+        from_scratch = cfg.get("from_scratch", False)
+        partial_load = cfg.get("partial_load", False)
+        if from_scratch: # if from scratch don't do anything 
+            return 
+
         load_finetuned = cfg.get("load_finetuned", True)
         if load_finetuned:
             finetune_path = cfg.get("finetuned", None)
             assert (
                 finetune_path is not None
             ), "Found load_finetuned is True, but finetune_path is None."
-            self.load_checkpoint(url_or_filename=finetune_path)
+            self.load_checkpoint(url_or_filename=finetune_path, partial_load=partial_load)
         else:
             load_pretrained = cfg.get("load_pretrained", True)
             if load_pretrained:
                 # load pre-trained weights
                 pretrain_path = cfg.get("pretrained", None)
                 assert "Found load_finetuned is False, but pretrain_path is None."
-                self.load_from_pretrained(url_or_filename=pretrain_path, **kwargs)
-
+                self.load_from_pretrained(url_or_filename=pretrain_path,
+                                        partial_load=partial_load, **kwargs)
 
     def before_evaluation(self, **kwargs):
         pass

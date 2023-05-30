@@ -166,6 +166,7 @@ class Blip2OPT(Blip2Base):
                 return_dict=True,
                 labels=targets,
             )
+            # print("outputs done")
         loss = outputs.loss
         return {"loss": loss}
 
@@ -428,7 +429,9 @@ class Blip2OPT(Blip2Base):
             max_txt_len=max_txt_len,
             apply_lemmatizer=apply_lemmatizer,
         )
+
         logging.info(f"Just created model architecture")
         model.load_checkpoint_from_config(cfg)
-        logging.info(f"Loaded checkpoint from model config")
+        # logging.info(f"Loaded checkpoint from model config")
+        logging.info("Dont load?")
         return model

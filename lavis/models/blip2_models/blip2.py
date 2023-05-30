@@ -23,6 +23,9 @@ from lavis.models.base_model import BaseModel
 from lavis.models.blip2_models.Qformer import BertConfig, BertLMHeadModel
 from lavis.models.eva_vit import create_eva_vit_g
 from lavis.models.clip_vit import create_clip_vit_L
+from lavis.models.cxr_repair_clip.model import build_model as create_cxr_repair_clip
+from lavis.models.hi_ml_resnet.model import get_biovil_resnet 
+from lavis.models.albef_vit_old.vit import create_albef_vit
 from transformers import BertTokenizer
 
 
@@ -70,6 +73,9 @@ class Blip2Base(BaseModel):
             "eva_clip_g",
             "eva2_clip_L",
             "clip_L",
+            "cxr_repair",
+            "biovil",
+            "albef_vit",
         ], "vit model must be eva_clip_g, eva2_clip_L or clip_L"
         if model_name == "eva_clip_g":
             visual_encoder = create_eva_vit_g(
@@ -81,11 +87,17 @@ class Blip2Base(BaseModel):
 #             )
         elif model_name == "clip_L":
             visual_encoder = create_clip_vit_L(img_size, use_grad_checkpoint, precision)
+        elif model_name == "biovil":
+            visual_encoder = get_biovil_resnet().get_visual_encoder() 
+        elif model_name == "cxr_repair":
+            visual_encoder = create_cxr_repair_clip(img_size, use_grad_checkpoint, precision)
+        elif model_name == "albef_vit":
+            visual_encoder = create_albef_vit(img_size, use_grad_checkpoint, precision)
         ln_vision = LayerNorm(visual_encoder.num_features)
         self.vit_name = model_name
         return visual_encoder, ln_vision
 
-    def load_from_pretrained(self, url_or_filename):
+    def load_from_pretrained(self, url_or_filename, partial_load=False):
         if is_url(url_or_filename):
             cached_file = download_cached_file(
                 url_or_filename, check_hash=False, progress=True
@@ -97,8 +109,21 @@ class Blip2Base(BaseModel):
             raise RuntimeError("checkpoint url or path is invalid")
 
         state_dict = checkpoint["model"]
-        print("STATE DICT in blip2")
-        print(state_dict.keys())
+        # print("STATE DICT in blip2")
+        # print(state_dict.keys())
+        if partial_load:
+            # delete params from state_dict where shape doesn't match so we don't load
+            orig_len = len(list(state_dict.items()))
+            for name, param in list(state_dict.items()):
+                if name not in self.state_dict():
+                    continue 
+                else:
+                    if state_dict[name].shape != self.state_dict()[name].shape:
+                        del state_dict[name] # don't want to load this 
+            new_len = len(list(state_dict.items()))
+            logging.info(f"partial loaded {new_len} out of {orig_len} pretrained parameters.")
+        else:
+            logging.info(f"full load.")
 
         msg = self.load_state_dict(state_dict, strict=False)
 

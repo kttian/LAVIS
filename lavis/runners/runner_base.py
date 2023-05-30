@@ -375,7 +375,7 @@ class RunnerBase:
             # training phase
             if not self.evaluate_only:
                 logging.info("Start training")
-                if self.config.model_cfg.model_type == 'pretrain' or self.config.run.val_loader:
+                if self.config.model_cfg.model_type == 'pretrain' or self.config.run_cfg.get("val_loader", False):
                     val_loader = self.val_loader 
                 else:
                     val_loader = None 
@@ -635,7 +635,7 @@ class RunnerBase:
         elif os.path.isfile(url_or_filename):
             checkpoint = torch.load(url_or_filename, map_location=self.device)
         else:
-            raise RuntimeError("checkpoint url or path is invalid")
+            raise RuntimeError(f"checkpoint url or path is invalid: {url_or_filename}")
 
         state_dict = checkpoint["model"]
         print("STATE DICT in runner base")

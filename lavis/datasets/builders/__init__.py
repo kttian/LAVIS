@@ -8,14 +8,17 @@
 from lavis.datasets.builders.base_dataset_builder import load_dataset_config
 from lavis.datasets.builders.caption_builder import (
     COCOCapBuilder,
-    MimicCxrBuilder,
-    MimicCxrSubsetBuilder,
-    MimicCxrImpressionBuilder,
-    MimicCxrFindingsBuilder,
     MSRVTTCapBuilder,
     MSVDCapBuilder,
     VATEXCapBuilder,
 )
+from lavis.datasets.builders.report_gen_builder import (
+    MimicCxrBuilder,
+    MimicCxrSubsetBuilder,
+    MimicCxrImpressionBuilder,
+    MimicCxrFindingsBuilder,
+    MimicCxrInstructFindingsSubsetBuilder,
+) 
 from lavis.datasets.builders.image_text_pair_builder import (
     ConceptualCaption12MBuilder,
     ConceptualCaption3MBuilder,
@@ -49,6 +52,8 @@ __all__ = [
     "MimicCxrBuilder",
     "MimicCxrSubsetBuilder",
     "MimicCxrImpressionBuilder",
+    "MimicCxrFindingsBuilder",
+    "MimicCxrInstructFindingsSubsetBuilder",
     "COCORetrievalBuilder",
     "COCOVQABuilder",
     "ConceptualCaption12MBuilder",

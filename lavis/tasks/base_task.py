@@ -126,6 +126,7 @@ class BaseTask:
             accum_grad_iters=accum_grad_iters,
             val_loader=val_loader,
         )
+        # train_dict = {}
         val_dict = self._after_train_inner_loop(
             epoch=epoch,
             iters_per_epoch=len(data_loader),

@@ -23,7 +23,7 @@ datasets:
         train:
           name: "blip_caption"
           # prompt: "a photo of "
-          prompt: "<findings> "
+          prompt: ""
         eval:
           name: "blip_caption"
     # build_info:
@@ -40,12 +40,12 @@ run:
   warmup_steps: 1000
   weight_decay: 0.05
   max_epoch: 200
-  batch_size_train: 1 # originally 16
+  batch_size_train: 64 # originally 16
   batch_size_eval: 4
   num_workers: 4
   accum_grad_iters: 1
 
-  max_len: 513
+  max_len: 300
   min_len: 15
   num_beams: 5
 
