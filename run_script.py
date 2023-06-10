@@ -8,6 +8,8 @@ import sys
 from omegaconf import OmegaConf
 import subprocess
 import argparse
+import random 
+import numpy as np
 
 # constants 
 LAVIS_ROOT = '/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/LAVIS-kttian-VIT'
@@ -21,6 +23,7 @@ from lavis.common.registry import registry
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--run_train', action='store_true')
 parser.add_argument('--create_eval_config', action='store_true')
 parser.add_argument('--run_evaluate', action='store_true')
 parser.add_argument('--run_metrics', action='store_true')
@@ -42,7 +45,38 @@ train_config_path = 'lavis/projects/blip2/albef_vit_0531/0609_ft_vicuna_find_wva
 checkpoint_path = '/n/data1/hms/dbmi/rajpurkar/lab/home/kt220/SPR23/LAVIS-kttian-VIT/lavis/output/BLIP2/Finetune/Vicuna/Findings_wval_subset_ins2/20230610012/checkpoint_48.pth'
 
 
-#### run eval config #### 
+### get temp log file name ### 
+def get_log_file(base):
+    i = random.randint(0, 100000)
+    log_file = f'_{base}_log{i}.txt'
+    while os.path.exists(f'_{base}_log{i}.txt'):
+        i += 1
+        log_file = f'_{base}_log{i}.txt'
+    return log_file
+
+
+#### Run Train ####
+def run_train(train_config_path):
+    assert train_config_path.endswith('.yaml'), f"Train config ({train_config_path}) path must be a yaml file"
+    cmd_train = f'python -m torch.distributed.run --nproc_per_node=1 train.py --cfg-path {train_config_path}'
+    print("Cmd Train: ", cmd_train)
+    log_file = get_log_file('train')
+    print("Log File: ", log_file)
+    cmd_train_log = f'{cmd_train} | tee {log_file}'
+    subprocess.run(cmd_train_log, shell=True)
+
+    # read first line of log file
+    with open(log_file, 'r') as f:
+        first_line = f.readline()
+        print("Log First Line: ", first_line)
+    
+    # get job id
+    assert first_line.startswith('FOLDER NAME'), f"Job Id not found in first line of log file"
+    job_id = first_line.split(' ')[-1].strip()
+    return job_id
+    
+
+#### Create Eval Config #### 
 def get_eval_config_path(train_config_path):
     return train_config_path.split('.')[0] + '_eval.yaml'
 
@@ -92,9 +126,32 @@ def run_evaluate(eval_config_path):
     
     subprocess.run(f'cd {LAVIS_ROOT}', shell=True)
     subprocess.run(f'source ~/.bashrc; conda activate {conda_env_name}', shell=True)
+
     cmd_evaluate = f'python -m torch.distributed.run --nproc_per_node=1 evaluate.py --cfg-path {eval_config_path}'
     print("Cmd Evaluate: ", cmd_evaluate)
-    subprocess.run(cmd_evaluate, shell=True)
+
+    log_file = get_log_file('eval')
+    print("Log File: ", log_file)
+    cmd_evaluate_log = f'{cmd_evaluate} | tee {log_file}'
+    subprocess.run(cmd_evaluate_log, shell=True)
+
+    # read log
+    with open(log_file, 'r') as f:
+        lines = f.readlines()
+    j = len(lines) - 1 
+    while j >= 0:
+        line = lines[j]
+        if line.startswith('result file saved to '):
+            # extract the result file
+            result_file = line.split('result file saved to ')[-1].strip()
+            print("Result File: ", result_file)
+            break
+        j -= 1
+    assert j >= 0, "Could not find result file in log file"
+    # delete log file
+    subprocess.run(f'rm {log_file}', shell=True)
+    # return result file
+    return result_file
 
 
 #### Run Metrics ####
@@ -222,15 +279,20 @@ def main(args):
         eval_config_path_arg = args.eval_cfg_path
     elif args.train_cfg_path:
         eval_config_path_arg = get_eval_config_path(args.train_cfg_path)
-    
+    result_file_arg = args.result_file 
+
     ### start run ### 
+    if args.run_train:
+        print("\nRUN TRAIN")
+        job_id = run_train(args.train_cfg_path)
+
     if args.create_eval_config:
         print("\nCREATE EVAL CONFIG")
         eval_config_path_arg = create_eval_config(args.train_cfg_path, args.checkpoint_path, args.eval_split)
     
     if args.run_evaluate:
         print("\nRUN EVALUATE")
-        run_evaluate(eval_config_path_arg)
+        result_file_arg = run_evaluate(eval_config_path_arg)
     
     if args.run_metrics:
         print("\nRUN METRICS")
@@ -238,7 +300,7 @@ def main(args):
         run_metrics(eval_config_path=eval_config_path_arg, 
                     eval_mode=args.eval_mode, 
                     eval_level=args.eval_level, 
-                    result_file=args.result_file,
+                    result_file=result_file_arg,
                     checkpoint_path=checkpoint_path_arg,
                     eval_split=args.eval_split)
 
