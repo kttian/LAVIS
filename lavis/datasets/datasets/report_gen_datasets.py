@@ -24,6 +24,9 @@ class __DisplMixin:
             }
         )
 
+# report_instruction = "Please write an expert radiology report for the given image."
+# report_instruction = "Based on the given chest x-ray image, please describe the relevant clinical findings."
+
 # each data point contains one section or the other
 class ReportGenInstructDataset(BaseDataset, __DisplMixin):
     def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
@@ -32,14 +35,6 @@ class ReportGenInstructDataset(BaseDataset, __DisplMixin):
         ann_root (string): directory to store the annotation file
         """
         super().__init__(vis_processor, text_processor, vis_root, ann_paths)
-
-        self.img_ids = {}
-        n = 0
-        for ann in self.annotation:
-            img_id = ann["image_id"]
-            if img_id not in self.img_ids.keys():
-                self.img_ids[img_id] = n
-                n += 1
 
     def __getitem__(self, index):
         # TODO this assumes image input, not general enough
@@ -50,7 +45,7 @@ class ReportGenInstructDataset(BaseDataset, __DisplMixin):
 
         image = self.vis_processor(image)
         caption = self.text_processor(ann["caption"])
-
+        instruction = self.text_processor.instruction 
         # first_token = caption.split(" ")[0]
         # if first_token == "<findings>" or first_token == "<impression>":
         #     prompt = first_token 
@@ -59,9 +54,9 @@ class ReportGenInstructDataset(BaseDataset, __DisplMixin):
 
         return {
             "image": image,
-            "text_input": "Please write an expert radiology report for the given image.",
+            "text_input": instruction,
             "text_output": caption,
-            "image_id": self.img_ids[ann["image_id"]],
+            "image_id": ann["image_id"],
             # "prompt": prompt,
         }
 
@@ -74,13 +69,13 @@ class ReportGenInstructEvalDataset(BaseDataset, __DisplMixin):
         """
         super().__init__(vis_processor, text_processor, vis_root, ann_paths)
 
-        self.img_ids = {}
-        n = 0
-        for ann in self.annotation:
-            img_id = ann["image_id"]
-            if img_id not in self.img_ids.keys():
-                self.img_ids[img_id] = n
-                n += 1
+        # self.img_ids = {}
+        # n = 0
+        # for ann in self.annotation:
+        #     img_id = ann["image_id"]
+        #     if img_id not in self.img_ids.keys():
+        #         self.img_ids[img_id] = n
+        #         n += 1
 
     def __getitem__(self, index):
         # TODO this assumes image input, not general enough
@@ -91,11 +86,12 @@ class ReportGenInstructEvalDataset(BaseDataset, __DisplMixin):
 
         image = self.vis_processor(image)
         caption = self.text_processor(ann["caption"][0])
+        instruction = self.text_processor.instruction 
 
         return {
             "image": image,
-            "text_input": "Please write an expert radiology report for the given image.",
-            "image_id": self.img_ids[ann["image_id"]],
+            "text_input": instruction,
+            "image_id": ann["image_id"],
             "text_output": caption,
             "instance_id": ann["instance_id"],
             # "prompt": prompt,
